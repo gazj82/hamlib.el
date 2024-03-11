@@ -5,33 +5,46 @@
 (defun rigctl (cmd param)
   "Send command to rigctl"
   (interactive)
-  (let (par (number-to-string param))
-  (shell-command-to-string (concat "printf %s $(" hamlib-rigctl-command " --model=" hamlib-rigctl-model " --rig-file=" hamlib-rigctl-rigfile " " cmd " " par ")"))))
+  (shell-command-to-string (concat "printf %s $(" hamlib-rigctl-command " --model=" hamlib-rigctl-model " --rig-file=" hamlib-rigctl-rigfile " " cmd " " param ")")))
 
 (defun rig-get-frequency ()
   "Get the radio's current frequency"
   (interactive)
   (message "%s" (rigctl "f" nil)))
 
+(defun rig-set-frequency (freq)
+  "Set the radio's current frequency"
+  (interactive "NSet frequency: ")
+  (rigctl "F" (number-to-string freq))
+  (rig-get-frequency))
+
 (defun rig-get-mode ()
   "Get the radio's current mode"
   (interactive)
   (message "%s" (rigctl "m" nil)))
+
+(defun rig-set-mode ()
+  "Set the radio's mode"
+  (interactive)
+  (let (cmd choice)
+    (setq choice (completing-read
+		  "Modulation mode: " '("USB" "LSB" "CW" "AM" "FM" "PKTLSB" "PKTUSB")))
+    (rigctl "M" (concat choice " 0"))
+    (rig-get-mode)))
 
 (defun rig-get-vfo ()
   "Get the radio's active VFO"
   (interactive)
   (message "%s" (rigctl "v" nil)))
 
-(defun rig-get-rit ()
-  "Get the radio's RIT (Reciever Incremental Tuning)"
+(defun rig-set-vfo ()
+  "Select the radio's current VFO"
   (interactive)
-  (message "%s" (rigctl "j" nil)))
-
-(defun rig-get-xit ()
-  "Get the radio's XIT (Transmitter Incremental Tuning)"
-  (interactive)
-  (message "%s" (rigctl "z" nil)))
+  (let (cmd choice)
+    (setq choice (completing-read
+		  "Select VFO: " '("VFOA" "VFOB" "MEM")))
+    (rigctl "V" choice)
+    (rig-get-vfo)))
 
 (defun rig-get-ptt ()
   "Get the radio's PTT (Push to talk) status"
@@ -97,5 +110,81 @@
 (defun rig-set-af (volume)
   "Set the radio's audio frequency (volume) gain"
   (interactive "NSet volume: ")
-  (rigctl "L AF" 0.2)
+  (rigctl "L AF" (number-to-string (/ volume 100.0)))
   (message "AF gain set to %s" (rig-get-af)))
+
+(defun rig-get-rf ()
+  "Get the radio's radio frequency gain"
+  (interactive)
+  (message "%d" (* 100 (string-to-number (rigctl "l RF" nil)))))
+
+(defun rig-get-squelch ()
+  "Get the radio's squelch level"
+  (interactive)
+  (message "%d" (* 100 (string-to-number (rigctl "l SQL" nil)))))
+
+(defun rig-get-if ()
+  "Get the radio's IF level"
+  (interactive)
+  (message "%s hz" (rigctl "l IF" nil)))
+
+(defun rig-get-cwpitch ()
+  "Get the radio's CW pitch"
+  (interactive)
+  (message "%s" (rigctl "l CWPITCH" nil)))
+
+(defun rig-get-rf-power ()
+  "Get the radio's RF power"
+  (interactive)
+  (message "%s watts" (* 100 (string-to-number (rigctl "l RFPOWER" nil)))))
+
+(defun rig-get-mic-gain ()
+  "Get the radio's microphone gain"
+  (interactive)
+  (message "%s" (round (* 100 (string-to-number (rigctl "l MICGAIN" nil))))))
+
+(defun rig-get-key-speed ()
+  "Get the radio's morse key speed"
+  (interactive)
+  (message "%s WPM" (rigctl "l KEYSPD" nil)))
+
+(defun rig-get-agc  ()
+  "Get the radio's AGC (automatic gain control) status"
+  (interactive)
+  (setq p1 (rigctl "l AGC" nil))
+  (cond
+   ((equal p1 "0")
+    (setq p1 "Off"))
+   ((equal p1 "1")
+    (setq p1 "Super fast"))
+   ((equal p1 "2")
+    (setq p1 "Fast"))
+   ((equal p1 "3")
+    (setq p1 "Slow"))
+   ((equal p1 "4")
+    (setq p1 "User"))
+   ((equal p1 "5")
+    (setq p1 "Medium"))
+   ((equal p1 "6")
+    (setq p1 "Auto")))
+  (message "AGD set as %s" p1))
+
+(defun rig-get-swr ()
+  "Get the radio's current SWR (Standing wave ratio)"
+  (interactive)
+  (message "SWR %d" (string-to-number (s-left 4 (rigctl "l SWR" nil)))))
+
+(defun rig-get-alc ()
+  "Get the radio's current ALC level (Automatic Level Control)"
+  (interactive)
+  (message "ALC %d" (* 100 (string-to-number (rigctl "l ALC" nil)))))
+
+(defun rig-get-signal-strength ()
+  (interactive)
+  "Get the radio's current signal strength"
+  (message "Signal %s dB" (rigctl "l STRENGTH" nil)))
+
+(defun rig-get-power-level ()
+  (interactive)
+  "Get the radio's current power level"
+  (message "Power output %s" (* 100 (string-to-number (rigctl "l RFPOWER_METER" nil)))))
