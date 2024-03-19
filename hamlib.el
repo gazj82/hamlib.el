@@ -5,12 +5,12 @@
 (defun rigctl (cmd param)
   "Send command to rigctl"
   (interactive)
-  (shell-command-to-string (concat "printf %s $(" hamlib-rigctl-command " --model=" hamlib-rigctl-model " --rig-file=" hamlib-rigctl-rigfile " " cmd " " param ")")))
+  (shell-command-to-string (concat "echo $(" hamlib-rigctl-command " --model=" hamlib-rigctl-model " --rig-file=" hamlib-rigctl-rigfile " " cmd " " param ")")))
 
 (defun rig-get-frequency ()
   "Get the radio's current frequency"
   (interactive)
-  (message "%s" (rigctl "f" nil)))
+  (message "%s" (car (split-string (rigctl "f" nil) "\n"))))
 
 (defun rig-set-frequency (freq)
   "Set the radio's current frequency"
@@ -21,7 +21,7 @@
 (defun rig-get-mode ()
   "Get the radio's current mode"
   (interactive)
-  (message "%s" (rigctl "m" nil)))
+  (message "%s" (car (split-string (rigctl "m" nil) " "))))
 
 (defun rig-set-mode ()
   "Set the radio's mode"
@@ -33,7 +33,7 @@
     (rig-get-mode)))
 
 (defun rig-get-vfo ()
-  "Get the radio's active VFO"
+  "Get the radio's active VFO" 
   (interactive)
   (message "%s" (rigctl "v" nil)))
 
@@ -187,4 +187,4 @@
 (defun rig-get-power-level ()
   (interactive)
   "Get the radio's current power level"
-  (message "Power output %s" (* 100 (string-to-number (rigctl "l RFPOWER_METER" nil)))))
+  (message "%d" (* 100 (string-to-number (rigctl "l RFPOWER_METER" nil)))))
