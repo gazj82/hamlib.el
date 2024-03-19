@@ -1,0 +1,14 @@
+* Hamlib and qso logger for emacs
+/Think of catchy title and put above/
+
+This project is designed to be a emacs interface for HAM radio enthusiats.  The project aims to make a log book frontend available as an emacs mode.  Some fields will be autofilled via your radio using the hamlib library.  Also many hamlib commands can be issued as emacs functions to control your radio using hamlib.
+
+** Current status
+This project is stil in a very early devlopment phase and is my first ever emacs / elisp code.  There will defintely be bugs!
+Please do help me with suggestions on where I could improve my code.
+
+** hamlib.el
+=hamlib.el= is an emacs frontend to the common hamlib calls using the rigctl cli command
+
+** qso.el
+=qso.el= is an emacs form that can be filled in to log a QSO, eventually the data filled in here will be used to populate an ADIF file.
